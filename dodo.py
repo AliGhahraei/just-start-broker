@@ -27,6 +27,16 @@ def task_bump() -> dict[str, Any]:
     return _get_interactive_task("poetryup")
 
 
+def task_serve() -> dict[str, Any]:
+    """Run development server."""
+    return {
+        "actions": [
+            LongRunning(_get_action("uvicorn just_start_broker.app:app --reload"))
+        ],
+        "title": title_with_actions,
+    }
+
+
 def _get_action(command: str) -> str:
     return f"poetry run {command}"
 

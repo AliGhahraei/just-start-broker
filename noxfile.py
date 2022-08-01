@@ -5,7 +5,7 @@ from nox_poetry import session as nox_session
 @nox_session  # type: ignore[misc]
 def coverage(session: Session) -> None:
     session.install("coverage[toml]", "pytest")
-    session.poetry.installroot()
+    session.poetry.installroot(extras=["test"])
     try:
         session.run("coverage", "run")
     finally:
