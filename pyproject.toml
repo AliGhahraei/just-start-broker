@@ -36,6 +36,7 @@ exclude_lines = [
     'pragma: no cover',
     '@(abc\.)?abstractmethod',
     'pass',
+    'if TYPE_CHECKING'
 ]
 
 
