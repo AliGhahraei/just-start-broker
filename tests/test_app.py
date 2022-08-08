@@ -24,7 +24,14 @@ class TestSchedule:
         return mock
 
     @staticmethod
-    @mark.parametrize("payload", [{}, {"events": []}, {"events": [{}]}])
+    @mark.parametrize(
+        "payload",
+        [
+            {},
+            {"date": "2022-08-01", "events": []},
+            {"date": "2022-08-01", "events": [{}]},
+        ],
+    )
     def test_create_schedule_responds_with_unprocessable_entity_given_invalid_payload(
         client: TestClient, payload: dict[str, Any]
     ) -> None:
