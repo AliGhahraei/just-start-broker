@@ -9,11 +9,13 @@ from xdg import xdg_config_home
 from just_start_broker.schemas import Schedule
 
 if TYPE_CHECKING:
-    from just_start_broker.app import ScheduleStorer
+    from just_start_broker.app import ScheduleAccessor
 
 
-def get_schedule_storer(*, config_path: Path = xdg_config_home()) -> "ScheduleStorer":
-    return FileScheduleStorer(config_path / "just-start-broker" / "schedule.json")
+def get_schedule_accessor(
+    *, config_path: Path = xdg_config_home()
+) -> "ScheduleAccessor":
+    return FileScheduleAccessor(config_path / "just-start-broker" / "schedule.json")
 
 
 class ScheduleEncoder(JSONEncoder):
@@ -23,11 +25,11 @@ class ScheduleEncoder(JSONEncoder):
         return super().default(o)
 
 
-class FileScheduleStorer:
+class FileScheduleAccessor:
     def __init__(self, path: Path):
         self.path = path
 
-    def store(self, schedule: Schedule) -> None:
+    def create(self, schedule: Schedule) -> None:
         self.path.parent.mkdir(exist_ok=True, parents=True)
         with open(self.path, "w") as f:
             dump(asdict(schedule), f, cls=ScheduleEncoder)

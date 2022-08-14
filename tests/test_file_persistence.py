@@ -3,22 +3,22 @@ from json import dumps, load
 from pathlib import Path
 
 from just_start_broker.file_persistence import (
-    FileScheduleStorer,
-    get_schedule_storer,
+    FileScheduleAccessor,
+    get_schedule_accessor,
     ScheduleEncoder,
 )
 from just_start_broker.schemas import Event, Schedule
 
-from pytest import mark, raises
+from pytest import fixture, mark, raises
 
 
-class TestGetScheduleStorer:
+class TestGetScheduleAccessor:
     @staticmethod
-    def test_call_returns_storer_with_default_path() -> None:
+    def test_call_returns_accessor_with_default_path() -> None:
         config_path = Path("config")
-        storer = get_schedule_storer(config_path=config_path)
+        accessor = get_schedule_accessor(config_path=config_path)
         expected_path = config_path / "just-start-broker" / "schedule.json"
-        assert storer.path == expected_path  # type: ignore[attr-defined]
+        assert accessor.path == expected_path  # type: ignore[attr-defined]
 
 
 class TestScheduleEncoder:
@@ -31,17 +31,22 @@ class TestScheduleEncoder:
             dumps(UnknownType(), cls=ScheduleEncoder)
 
 
-class TestFileScheduleStorer:
+class TestFileScheduleAccessor:
+    @staticmethod
+    @fixture
+    def schedule() -> Schedule:
+        return Schedule(date(2022, 8, 13), [Event("Work", time(4), time(5))])
+
     @staticmethod
     @mark.parametrize(
         "subpath", [Path("file"), Path("dir") / "file", Path("dir") / "subdir" / "file"]
     )
-    def test_store_stores_file(tmp_path: Path, subpath: Path) -> None:
+    def test_create_writes_file(
+        schedule: Schedule, tmp_path: Path, subpath: Path
+    ) -> None:
         filepath = tmp_path / subpath
 
-        FileScheduleStorer(filepath).store(
-            Schedule(date(2022, 8, 13), [Event("Work", time(4), time(5))])
-        )
+        FileScheduleAccessor(filepath).create(schedule)
 
         with open(filepath) as f:
             contents = load(f)

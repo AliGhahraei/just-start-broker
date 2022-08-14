@@ -2,8 +2,8 @@ from datetime import date, time
 from typing import Any
 from unittest.mock import Mock
 
-from just_start_broker.app import app, ScheduleStorer
-from just_start_broker.file_persistence import get_schedule_storer
+from just_start_broker.app import app, ScheduleAccessor
+from just_start_broker.file_persistence import get_schedule_accessor
 
 from just_start_broker.schemas import Event, Schedule
 from pytest import fixture, mark
@@ -18,9 +18,9 @@ def client() -> TestClient:
 class TestSchedule:
     @staticmethod
     @fixture(autouse=True)
-    def storer() -> Mock:
-        mock = Mock(spec_set=ScheduleStorer)
-        app.dependency_overrides[get_schedule_storer] = lambda: mock
+    def accessor() -> Mock:
+        mock = Mock(spec_set=ScheduleAccessor)
+        app.dependency_overrides[get_schedule_accessor] = lambda: mock
         return mock
 
     @staticmethod
@@ -51,14 +51,14 @@ class TestSchedule:
             }
 
         @staticmethod
-        def test_create_schedule_stores_schedule(
+        def test_create_schedule_creates_schedule(
             client: TestClient,
-            storer: Mock,
+            accessor: Mock,
             payload: dict[str, Any],
         ) -> None:
             client.post("/schedule", json=payload)
 
-            storer.store.assert_called_once_with(
+            accessor.create.assert_called_once_with(
                 Schedule(
                     date(2022, 8, 1),
                     [Event("test_type", time(3), time(4))],
@@ -68,7 +68,7 @@ class TestSchedule:
         @staticmethod
         def test_create_schedule_responds_correctly(
             client: TestClient,
-            storer: Mock,
+            accessor: Mock,
             payload: dict[str, Any],
         ) -> None:
             response = client.post("/schedule", json=payload)
