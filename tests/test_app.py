@@ -39,26 +39,39 @@ class TestSchedule:
 
         assert response.status_code == 422
 
-    @staticmethod
-    def test_create_schedule_creates_schedule_given_valid_payload(
-        client: TestClient,
-        storer: Mock,
-    ) -> None:
-        payload = {
-            "date": "2022-08-01",
-            "events": [{"type": "test_type", "start": "03:00:00", "end": "04:00:00"}],
-        }
+    class TestValidPayload:
+        @staticmethod
+        @fixture
+        def payload() -> dict[str, Any]:
+            return {
+                "date": "2022-08-01",
+                "events": [
+                    {"type": "test_type", "start": "03:00:00", "end": "04:00:00"}
+                ],
+            }
 
-        response = client.post(
-            "/schedule",
-            json=payload,
-        )
+        @staticmethod
+        def test_create_schedule_stores_schedule(
+            client: TestClient,
+            storer: Mock,
+            payload: dict[str, Any],
+        ) -> None:
+            client.post("/schedule", json=payload)
 
-        assert response.status_code == 200
-        assert response.json() == payload
-        storer.store.assert_called_once_with(
-            Schedule(
-                date(2022, 8, 1),
-                [Event("test_type", time(3), time(4))],
-            ),
-        )
+            storer.store.assert_called_once_with(
+                Schedule(
+                    date(2022, 8, 1),
+                    [Event("test_type", time(3), time(4))],
+                ),
+            )
+
+        @staticmethod
+        def test_create_schedule_responds_correctly(
+            client: TestClient,
+            storer: Mock,
+            payload: dict[str, Any],
+        ) -> None:
+            response = client.post("/schedule", json=payload)
+
+            assert response.status_code == 200
+            assert response.json() == payload
