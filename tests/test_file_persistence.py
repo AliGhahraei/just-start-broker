@@ -1,4 +1,4 @@
-from datetime import date, time
+from datetime import datetime
 from json import dumps, load
 from pathlib import Path
 
@@ -35,7 +35,10 @@ class TestFileScheduleAccessor:
     @staticmethod
     @fixture
     def schedule() -> Schedule:
-        return Schedule(date(2022, 8, 13), [Event("Work", time(4), time(5))])
+        return Schedule(
+            datetime(2022, 8, 15),
+            [Event("Work", datetime(2022, 8, 14, 4), datetime(2022, 8, 14, 5))],
+        )
 
     @staticmethod
     @mark.parametrize(
@@ -52,6 +55,12 @@ class TestFileScheduleAccessor:
             contents = load(f)
 
         assert contents == {
-            "date": "2022-08-13",
-            "events": [{"start": "04:00:00", "end": "05:00:00", "type": "Work"}],
+            "expiration": "2022-08-15 00:00:00",
+            "events": [
+                {
+                    "start": "2022-08-14 04:00:00",
+                    "end": "2022-08-14 05:00:00",
+                    "type": "Work",
+                }
+            ],
         }

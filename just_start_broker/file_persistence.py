@@ -1,5 +1,5 @@
 from dataclasses import asdict
-from datetime import date, time
+from datetime import datetime
 from json import dump, JSONEncoder
 from pathlib import Path
 from typing import Any, TYPE_CHECKING
@@ -20,7 +20,7 @@ def get_schedule_accessor(
 
 class ScheduleEncoder(JSONEncoder):
     def default(self, o: Any) -> Any:
-        if isinstance(o, (date, time)):
+        if isinstance(o, datetime):
             return str(o)
         return super().default(o)
 

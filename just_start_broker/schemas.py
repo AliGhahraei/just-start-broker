@@ -1,4 +1,4 @@
-from datetime import date, time
+from datetime import datetime
 
 from pydantic import conlist
 from pydantic.dataclasses import dataclass
@@ -7,11 +7,11 @@ from pydantic.dataclasses import dataclass
 @dataclass
 class Event:
     type: str
-    start: time
-    end: time
+    start: datetime
+    end: datetime
 
 
 @dataclass
 class Schedule:
-    date: date
+    expiration: datetime
     events: conlist(Event, min_items=1)  # type: ignore[valid-type]
