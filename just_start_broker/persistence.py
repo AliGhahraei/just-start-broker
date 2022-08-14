@@ -1,0 +1,2 @@
+class ScheduleNotExpired(Exception):
+    pass
