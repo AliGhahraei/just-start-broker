@@ -1,11 +1,10 @@
-from datetime import datetime
 from typing import Any
 from unittest.mock import Mock
 
 from just_start_broker.app import app, ScheduleAccessor
 from just_start_broker.file_persistence import get_schedule_accessor
 
-from just_start_broker.schemas import Event, Schedule
+from just_start_broker.schemas import Schedule
 from pytest import fixture, mark
 from starlette.testclient import TestClient
 
@@ -47,7 +46,7 @@ class TestSchedule:
                 "expiration": "2022-08-15T00:00:00",
                 "events": [
                     {
-                        "type": "test_type",
+                        "type": "Work",
                         "start": "2022-08-14T03:00:00",
                         "end": "2022-08-14T04:00:00",
                     }
@@ -59,21 +58,11 @@ class TestSchedule:
             client: TestClient,
             accessor: Mock,
             payload: dict[str, Any],
+            schedule: Schedule,
         ) -> None:
             client.post("/schedule", json=payload)
 
-            accessor.create.assert_called_once_with(
-                Schedule(
-                    datetime(2022, 8, 15),
-                    [
-                        Event(
-                            "test_type",
-                            datetime(2022, 8, 14, 3),
-                            datetime(2022, 8, 14, 4),
-                        )
-                    ],
-                ),
-            )
+            accessor.create.assert_called_once_with(schedule)
 
         @staticmethod
         def test_create_schedule_responds_correctly(

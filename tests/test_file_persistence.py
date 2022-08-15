@@ -43,21 +43,13 @@ class TestScheduleEncoder:
 class TestFileScheduleAccessor:
     @staticmethod
     @fixture
-    def schedule() -> Schedule:
-        return Schedule(
-            datetime(2022, 8, 15),
-            [Event("Work", datetime(2022, 8, 14, 4), datetime(2022, 8, 14, 5))],
-        )
-
-    @staticmethod
-    @fixture
     def serialized_schedule() -> dict[str, Any]:
         return {
             "expiration": "2022-08-15 00:00:00",
             "events": [
                 {
-                    "start": "2022-08-14 04:00:00",
-                    "end": "2022-08-14 05:00:00",
+                    "start": "2022-08-14 03:00:00",
+                    "end": "2022-08-14 04:00:00",
                     "type": "Work",
                 }
             ],
