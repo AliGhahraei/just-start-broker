@@ -8,8 +8,8 @@ from pytest import fixture
 @fixture
 def schedule() -> Schedule:
     return Schedule(
-        datetime(2022, 8, 15),
-        [
+        expiration=datetime(2022, 8, 15),
+        events=[
             Event(
                 "Work",
                 datetime(2022, 8, 14, 3),

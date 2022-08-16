@@ -76,8 +76,10 @@ class TestFileScheduleAccessor:
         @fixture
         def second_schedule() -> Schedule:
             return Schedule(
-                datetime(2022, 8, 16),
-                [Event("Gym", datetime(2022, 8, 15, 1), datetime(2022, 8, 15, 2))],
+                expiration=datetime(2022, 8, 16),
+                events=[
+                    Event("Gym", datetime(2022, 8, 15, 1), datetime(2022, 8, 15, 2))
+                ],
             )
 
         @staticmethod
