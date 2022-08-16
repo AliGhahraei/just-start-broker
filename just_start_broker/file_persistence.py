@@ -33,8 +33,11 @@ class FileScheduleAccessor:
         self.get_now = get_now
 
     def create(self, schedule: Schedule) -> None:
-        if self.path.exists() and self.read().expiration > self.get_now():
-            raise ScheduleNotExpired
+        if (
+            self.path.exists()
+            and (expiration := self.read().expiration) > self.get_now()
+        ):
+            raise ScheduleNotExpired(expiration)
 
         self.path.parent.mkdir(exist_ok=True, parents=True)
         with open(self.path, "w") as f:

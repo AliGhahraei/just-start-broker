@@ -1,0 +1,2 @@
+class JustStartBrokerException(Exception):
+    pass
