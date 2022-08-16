@@ -7,7 +7,7 @@ from typing import Any, Callable, TYPE_CHECKING
 from pydantic import parse_file_as
 from xdg import xdg_config_home
 
-from just_start_broker.persistence import ScheduleNotExpired
+from just_start_broker.persistence import ScheduleNotExpired, ScheduleNotFoundError
 from just_start_broker.schemas import Schedule
 
 if TYPE_CHECKING:
@@ -44,4 +44,7 @@ class FileScheduleAccessor:
             dump(asdict(schedule), f, cls=ScheduleEncoder)
 
     def read(self) -> Schedule:
-        return parse_file_as(Schedule, self.path)
+        try:
+            return parse_file_as(Schedule, self.path)
+        except FileNotFoundError as e:
+            raise ScheduleNotFoundError from e

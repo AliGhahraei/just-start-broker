@@ -9,3 +9,8 @@ class ScheduleNotExpired(JustStartBrokerException):
 
     def __str__(self) -> str:
         return f"Cannot set a new schedule until {self.expiration}"
+
+
+class ScheduleNotFoundError(JustStartBrokerException):
+    def __str__(self) -> str:
+        return "Schedule did not exist"

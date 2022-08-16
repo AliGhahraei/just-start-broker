@@ -9,7 +9,7 @@ from just_start_broker.file_persistence import (
     get_schedule_accessor,
     ScheduleEncoder,
 )
-from just_start_broker.persistence import ScheduleNotExpired
+from just_start_broker.persistence import ScheduleNotExpired, ScheduleNotFoundError
 from just_start_broker.schemas import Event, Schedule
 
 from pytest import fixture, mark, raises
@@ -41,6 +41,11 @@ class TestScheduleEncoder:
 
 
 class TestFileScheduleAccessor:
+    @staticmethod
+    @fixture
+    def filepath(tmp_path: Path) -> Path:
+        return tmp_path / "file"
+
     @staticmethod
     @fixture
     def serialized_schedule() -> dict[str, Any]:
@@ -97,11 +102,6 @@ class TestFileScheduleAccessor:
             }
 
         @staticmethod
-        @fixture
-        def filepath(tmp_path: Path) -> Path:
-            return tmp_path / "file"
-
-        @staticmethod
         def test_create_rejects_schedule_if_past_expiration_is_in_future(
             schedule: Schedule,
             second_schedule: Schedule,
@@ -128,3 +128,10 @@ class TestFileScheduleAccessor:
             accessor.create(second_schedule)
 
             assert_content_equals(filepath, second_serialized_schedule)
+
+    @staticmethod
+    def test_read_raises_schedule_not_found_error_if_schedule_has_not_been_added(
+        filepath: Path,
+    ) -> None:
+        with raises(ScheduleNotFoundError):
+            FileScheduleAccessor(filepath, Mock()).read()

@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 from just_start_broker.app import app, ScheduleAccessor
 from just_start_broker.file_persistence import get_schedule_accessor
-from just_start_broker.persistence import ScheduleNotExpired
+from just_start_broker.persistence import ScheduleNotExpired, ScheduleNotFoundError
 
 from just_start_broker.schemas import Schedule
 from pytest import fixture, FixtureRequest, mark
@@ -21,8 +21,12 @@ class TestSchedule:
     @fixture(autouse=True)
     def accessor(request: FixtureRequest) -> Mock:
         mock = Mock(spec_set=ScheduleAccessor)
-        if getattr(request, "param", "") == "ScheduleNotExpired":
-            mock.create.side_effect = ScheduleNotExpired(datetime(2022, 8, 15))
+        side_effects = {
+            "ScheduleNotExpired": ScheduleNotExpired(datetime(2022, 8, 15)),
+            "ScheduleNotFoundError": ScheduleNotFoundError,
+        }
+        if (param := getattr(request, "param", None)) is not None:
+            mock.create.side_effect = side_effects[param]
         app.dependency_overrides[get_schedule_accessor] = lambda: mock
         return mock
 
@@ -58,7 +62,9 @@ class TestSchedule:
             }
 
         @staticmethod
-        @mark.parametrize("accessor", ["ScheduleNotExpired"], indirect=True)
+        @mark.parametrize(
+            "accessor", ["ScheduleNotExpired", "ScheduleNotFoundError"], indirect=True
+        )
         def test_create_raises_unprocessable_entity_if_schedule_has_not_expired(
             client: TestClient, accessor: Mock, payload: dict[str, Any]
         ) -> None:
@@ -67,14 +73,27 @@ class TestSchedule:
             assert response.status_code == 422
 
         @staticmethod
-        @mark.parametrize("accessor", ["ScheduleNotExpired"], indirect=True)
-        def test_create_shows_expected_message_if_schedule_has_not_expired(
-            client: TestClient, accessor: Mock, payload: dict[str, Any]
+        @mark.parametrize(
+            "accessor,expected_error",
+            [
+                ["ScheduleNotFoundError", "Schedule did not exist"],
+                [
+                    "ScheduleNotExpired",
+                    "Cannot set a new schedule until 2022-08-15 00:00:00",
+                ],
+            ],
+            indirect=["accessor"],
+        )
+        def test_create_shows_expected_message_if_schedule_raises_client_error(
+            client: TestClient,
+            accessor: Mock,
+            expected_error: str,
+            payload: dict[str, Any],
         ) -> None:
             response = client.post("/schedule", json=payload)
 
             assert response.json() == {
-                "error": "Cannot set a new schedule until 2022-08-15 00:00:00",
+                "error": expected_error,
             }
 
         @staticmethod

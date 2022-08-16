@@ -7,7 +7,7 @@ from pytest import fixture, mark, raises
 
 class TestEvent:
     @staticmethod
-    @mark.parametrize('end', [datetime(2022, 8, 15, 23), datetime(2022, 8, 16)])
+    @mark.parametrize("end", [datetime(2022, 8, 15, 23), datetime(2022, 8, 16)])
     def test_init_raises_value_error_if_start_is_not_before_end(end: datetime) -> None:
         with raises(ValueError, match="start must happen before end"):
             Event("Work", datetime(2022, 8, 16), end)
