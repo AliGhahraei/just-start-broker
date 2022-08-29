@@ -33,12 +33,7 @@ class FileScheduleAccessor:
         self.get_now = get_now
 
     def create(self, schedule: Schedule) -> None:
-        if (
-            self.path.exists()
-            and (expiration := self.read().expiration) > self.get_now()
-        ):
-            raise ScheduleNotExpired(expiration)
-
+        raise_if_schedule_is_unexpired(self.read, self.get_now())
         self.path.parent.mkdir(exist_ok=True, parents=True)
         with open(self.path, "w") as f:
             dump(asdict(schedule), f, cls=ScheduleEncoder)
@@ -48,3 +43,15 @@ class FileScheduleAccessor:
             return parse_file_as(Schedule, self.path)
         except FileNotFoundError as e:
             raise ScheduleNotFoundError from e
+
+
+def raise_if_schedule_is_unexpired(
+    read_schedule: Callable[[], Schedule], now: datetime
+) -> None:
+    try:
+        schedule = read_schedule()
+    except ScheduleNotFoundError:
+        pass
+    else:
+        if schedule.expiration > now:
+            raise ScheduleNotExpired(schedule.expiration)
