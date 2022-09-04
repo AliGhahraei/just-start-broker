@@ -7,7 +7,7 @@ from pydantic import conlist, root_validator, validator
 from pydantic.dataclasses import dataclass
 
 
-@total_ordering
+@total_ordering  # type: ignore[arg-type]
 @dataclass
 class Event:
     type: str
