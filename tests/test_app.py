@@ -2,19 +2,38 @@ from datetime import datetime
 from typing import Any
 from unittest.mock import Mock
 
-from just_start_broker.app import app, ScheduleAccessor
+from just_start_broker.app import app, register_handler, ScheduleAccessor
 from just_start_broker.file_persistence import get_schedule_accessor
 from just_start_broker.persistence import ScheduleNotExpired, ScheduleNotFoundError
 from just_start_broker.schemas import Event, Schedule
 
 from pytest import fixture, mark
-from starlette.status import HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY
+from starlette.status import (
+    HTTP_404_NOT_FOUND,
+    HTTP_418_IM_A_TEAPOT,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
 from starlette.testclient import TestClient
 
 
 @fixture
 def client() -> TestClient:
     return TestClient(app)
+
+
+class TestApp:
+    @staticmethod
+    def test_error_response_contains_error_string(client: TestClient):
+        class TempException(Exception):
+            pass
+
+        @app.get("/error/")
+        def error_route():
+            raise TempException("test_string")
+
+        register_handler(TempException, HTTP_418_IM_A_TEAPOT)
+
+        assert client.get("/error/").json() == {"error": "test_string"}
 
 
 class TestSchedule:
@@ -55,17 +74,6 @@ class TestSchedule:
                 response = client.post("/schedule", json=schedule_dict)
 
                 assert response.status_code == HTTP_404_NOT_FOUND
-
-            @staticmethod
-            def test_create_shows_expected_message_if_schedule_raises_client_error(
-                client: TestClient,
-                schedule_dict: dict[str, Any],
-            ) -> None:
-                response = client.post("/schedule", json=schedule_dict)
-
-                assert response.json() == {
-                    "error": "Schedule did not exist",
-                }
 
         @staticmethod
         @mark.parametrize(
@@ -123,16 +131,6 @@ class TestSchedule:
                 response = client.get("/schedule")
 
                 assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
-
-            @staticmethod
-            def test_read_shows_expected_message_if_schedule_raises_client_error(
-                client: TestClient,
-            ) -> None:
-                response = client.get("/schedule")
-
-                assert response.json() == {
-                    "error": "Cannot set a new schedule until 2022-08-15 00:00:00",
-                }
 
         class TestWithExistingSchedule:
             @staticmethod

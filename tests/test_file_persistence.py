@@ -111,7 +111,10 @@ class TestFileScheduleAccessor:
             accessor = FileScheduleAccessor(filepath, get_now)
 
             accessor.create(schedule)
-            with raises(ScheduleNotExpired):
+            with raises(
+                ScheduleNotExpired,
+                match="Cannot set a new schedule until" " 2022-08-15 00:00:00",
+            ):
                 accessor.create(second_schedule)
 
         @staticmethod
@@ -133,5 +136,5 @@ class TestFileScheduleAccessor:
     def test_read_raises_schedule_not_found_error_if_schedule_has_not_been_added(
         filepath: Path,
     ) -> None:
-        with raises(ScheduleNotFoundError):
+        with raises(ScheduleNotFoundError, match="Schedule did not exist"):
             FileScheduleAccessor(filepath, Mock()).read()
