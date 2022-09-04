@@ -658,7 +658,7 @@ test = ["requests"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "1c0c13e1a7f9383b8e8216c2cbd8627d5e03ceac27da24287071169741214dc3"
+content-hash = "638811d922eac433ace59a232416a44da87fb7b21ad9ac1e2474acbe4d63c288"
 
 [metadata.files]
 anyio = [
