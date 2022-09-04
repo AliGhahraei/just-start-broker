@@ -5,13 +5,13 @@ from fastapi.encoders import jsonable_encoder
 from starlette.responses import JSONResponse
 from starlette.status import HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY
 
+from just_start_broker import ClientError, EntityNotFoundError
 from just_start_broker.file_persistence import get_schedule_accessor
-from just_start_broker.persistence import ScheduleNotExpired, ScheduleNotFoundError
 from just_start_broker.schemas import Schedule
 
 CLIENT_ERRORS = {
-    ScheduleNotExpired: HTTP_422_UNPROCESSABLE_ENTITY,
-    ScheduleNotFoundError: HTTP_404_NOT_FOUND,
+    ClientError: HTTP_422_UNPROCESSABLE_ENTITY,
+    EntityNotFoundError: HTTP_404_NOT_FOUND,
 }
 app = FastAPI()
 
